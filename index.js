@@ -23,7 +23,7 @@ httpServer.listen(config.httpPort, function() {
 	console.log("Server is listening on port: " + config.httpPort);
 });
 
-//HTTPS Server
+//HTTPS Server 
 var httpsServerOptions = {
 	'key' : fs.readFileSync('./https/key.pem'),
 	'cert' : fs.readFileSync('./https/cert.pem')
@@ -106,10 +106,8 @@ var unifiedServer = function(req, res) {
 //Handlers 
 var handlers = {};
 
-//Sample handler
-handlers.sample = function(data, callback) {
-	//callback a http status code, and a payload object
-	callback(406, {'name' : 'sample handler'});
+handlers.ping = function(data, callback) {
+	callback(200);
 };
 
 //not found handler
@@ -119,5 +117,5 @@ handlers.notFound = function(data, callback) {
 
 //Define a request router
 var router = {
-	'sample' : handlers.sample
+	'ping' : handlers.ping
 };
