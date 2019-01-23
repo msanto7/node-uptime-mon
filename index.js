@@ -13,6 +13,12 @@ var fs = require('fs');
 var handlers = require('./lib/handlers');
 var helpers = require('./lib/helpers');
 
+// @TODO GET RID OF THIS
+
+helpers.sendTwilioSms('4432207448', 'Hello!', function(err) {
+	console.log('this was the err', err);
+});
+
 
 
 //HTTP Server 
@@ -26,7 +32,7 @@ httpServer.listen(config.httpPort, function() {
 });
 
 //HTTPS Server 
-var httpsServerOptions = {
+var httpsServerOptions = { 
 	'key' : fs.readFileSync('./https/key.pem'),
 	'cert' : fs.readFileSync('./https/cert.pem')
 };
