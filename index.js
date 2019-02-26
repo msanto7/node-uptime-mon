@@ -4,117 +4,26 @@
 *
 */
 
-var http = require('http');
-var https = require('https');
-var url = require('url');    //node library
-var StringDecoder = require('string_decoder').StringDecoder;
-var config = require('./lib/config');
-var fs = require('fs');
-var handlers = require('./lib/handlers');
-var helpers = require('./lib/helpers');
+// Dependencies
+var server = require('./lib/server');
+var workers = require('./lib/workers');
 
-// @TODO GET RID OF THIS
+// Declare the app 
+var app = {};
 
-helpers.sendTwilioSms('4432207448', 'Hello!', function(err) {
-	console.log('this was the err', err);
-});
+// Init 
+app.init = function() {
+	// start the server
+	server.init();
 
+	//start the workers
+	workers.init();
 
-
-//HTTP Server 
-var httpServer = http.createServer(function (req, res) {
-	unifiedServer(req, res);	
-});
-
-//Start HTTP Server
-httpServer.listen(config.httpPort, function() {
-	console.log("Server is listening on port: " + config.httpPort);
-});
-
-//HTTPS Server 
-var httpsServerOptions = { 
-	'key' : fs.readFileSync('./https/key.pem'),
-	'cert' : fs.readFileSync('./https/cert.pem')
 };
 
-var httpsServer = https.createServer(httpsServerOptions, function(req, res) {
-	unifiedServer(req, res);	
-});
-
-//Start HTTPS Server
-httpsServer.listen(config.httpsPort, function() {
-	console.log("Server is listening on port: " + config.httpsPort);
-});
+//Execute Init
+app.init()
 
 
-// Server logic (http and https)
-var unifiedServer = function(req, res) {
-
-	// get the url and parse it
-	var parsedUrl = url.parse(req.url, true);
-
-	// get the path from that url
-	var path = parsedUrl.pathname;
-	var trimmedPath = path.replace(/^\/+|\/+$/g, '');
-
-	//Get the query string as object
-	var queryStringObject = parsedUrl.query;
-
-	// Get HTTP Method
-	var method = req.method.toLowerCase();
-
-	// Get headers as an object
-	var headers = req.headers;
-
-	//Get the payload  (strind decoder built in node library)
-	var decoder = new StringDecoder('utf-8');
-	var buffer = '';
-	req.on('data', function(data) {
-		buffer += decoder.write(data);
-	});
-	req.on('end', function() { 
-		buffer += decoder.end();
-
-		//Choose the handler for this request. 
-		var chosenHandler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound;
-
-		//construct object to send to handler
-		var data = {
-			'trimmedPath' : trimmedPath,
-			'queryStringObject' : queryStringObject,
-			'method' : method,
-			'headers' : headers,
-			'payload' : helpers.parseJsonToObject(buffer)
-		};	
-
-		//Route the request specified in the router
-		chosenHandler(data, function(statusCode, payload) {
-			//default status code 200
-			statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
-
-			//use the payload or default to empty object 
-			payload = typeof(payload) == 'object' ? payload : {};
-
-			//convert payload from object to string
-			var payloadString = JSON.stringify(payload);
-
-			//Return response
-			res.setHeader('Content-Type', 'application/json');
-			res.writeHead(statusCode);
-			res.end(payloadString);
-
-			//Log 
-			console.log('Returning response : ', statusCode, payloadString);
-
-		});
-	});
-};
-
-
-//Define a request router
-var router = {
-	'ping' : handlers.ping,
-	'users' : handlers.users,
-	'tokens' : handlers.tokens,
-	'checks' : handlers.checks
-};
+//Export the app
+module.exports = app;
