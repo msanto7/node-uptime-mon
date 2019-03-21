@@ -63,7 +63,7 @@ app.client.request = function(header, path, method, queryStringObject, payload, 
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState == XMLHttpRequest.DONE) {
 			var statusCode = xhr.status;
-			var responseReturned = xhr.respnseText;
+			var responseReturned = xhr.responseText;
 
 			// callback if requested 
 			if (callback) {
